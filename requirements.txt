@@ -1,0 +1,28 @@
+# LangChain Core
+langchain
+langchain-core
+
+# OpenAI Integration
+langchain-openai
+openai
+
+# Anthropic Integration
+langchain-anthropic
+
+# Google Gemini (PaLM) Integration
+langchain-google-genai
+google-generativeai
+
+# Ollama (local models)
+ollama
+langchain-ollama
+
+# Environment Variable Management
+python-dotenv
+
+# Vector
+faiss-cpu
+
+# Machine Learning Utilities
+numpy
+scikit-learn
