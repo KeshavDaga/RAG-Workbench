@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from api.schemas import QueryRequest, QueryResponse
+from api.schemas import ChatRequest, ChatResponse, QueryRequest, QueryResponse
 from core.engine import RAGEngine
 from core.llm.registry import get_generator, get_embedder
 from core.retriever.simple import SimpleRetriever
@@ -16,6 +16,16 @@ router = APIRouter()
 @router.get("/health")
 def health():
     return {"status": "ok"}
+
+
+@router.post("/llm/chat", response_model=ChatResponse)
+def chat_llm(request: ChatRequest):
+    generator = get_generator(request.generator)
+
+    answer = generator.generate(request.prompt)
+
+    return ChatResponse(answer=answer)
+
 
 @router.post("/rag/query", response_model=QueryResponse)
 def query_rag(request: QueryRequest):
