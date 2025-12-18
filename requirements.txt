@@ -26,3 +26,7 @@ faiss-cpu
 # Machine Learning Utilities
 numpy
 scikit-learn
+
+# FastAPI
+fastapi
+uvicorn
