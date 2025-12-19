@@ -30,3 +30,7 @@ class FaissVectorStore(VectorStore):
 
         scores, indices = self.index.search(query_np, top_k)
         return [self.metadatas[idx] for idx in indices[0]]
+
+    def clear(self) -> None:
+        self.index.reset()
+        self.metadatas.clear()
