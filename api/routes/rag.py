@@ -1,30 +1,16 @@
 from fastapi import APIRouter
 
-from api.schemas import ChatRequest, ChatResponse, QueryRequest, QueryResponse
+from api.schemas import QueryRequest, QueryResponse
 from core.engine import RAGEngine
 from core.llm.registry import get_generator, get_embedder
 from core.retriever.simple import SimpleRetriever
 from core.vector_store.faiss_store import FaissVectorStore
 
-
 # TEMP setup (will improve later)
 VECTOR_DIM = 1024
 vector_store = FaissVectorStore(dimension=VECTOR_DIM)
 
-router = APIRouter()
-
-@router.get("/health")
-def health():
-    return {"status": "ok"}
-
-
-@router.post("/llm/chat", response_model=ChatResponse)
-def chat_llm(request: ChatRequest):
-    generator = get_generator(request.generator)
-
-    answer = generator.generate(request.prompt)
-
-    return ChatResponse(answer=answer)
+router = APIRouter(tags=["RAG"])
 
 
 @router.post("/rag/query", response_model=QueryResponse)
@@ -43,5 +29,5 @@ def query_rag(request: QueryRequest):
     )
 
     answer = engine.query(request.question)
-
     return QueryResponse(answer=answer)
+
