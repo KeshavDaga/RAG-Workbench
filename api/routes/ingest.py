@@ -2,12 +2,8 @@ from fastapi import APIRouter, HTTPException
 
 from api.schemas import IngestRequest, IngestResponse
 from core.llm.registry import get_embedder
-from core.vector_store.faiss_store import FaissVectorStore
+from core.vector_store.instance import vector_store
 from ingestion.youtube.ingest import ingest_youtube_video
-
-# TEMP setup (will improve later)
-VECTOR_DIM = 1024
-vector_store = FaissVectorStore(dimension=VECTOR_DIM)
 
 router = APIRouter(tags=["Ingestion"])
 

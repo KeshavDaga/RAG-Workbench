@@ -4,11 +4,7 @@ from api.schemas import QueryRequest, QueryResponse
 from core.engine import RAGEngine
 from core.llm.registry import get_generator, get_embedder
 from core.retriever.simple import SimpleRetriever
-from core.vector_store.faiss_store import FaissVectorStore
-
-# TEMP setup (will improve later)
-VECTOR_DIM = 1024
-vector_store = FaissVectorStore(dimension=VECTOR_DIM)
+from core.vector_store.instance import vector_store
 
 router = APIRouter(tags=["RAG"])
 
