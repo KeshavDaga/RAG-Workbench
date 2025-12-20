@@ -14,7 +14,7 @@ class RAGEngine:
 
     def _build_prompt(self, contexts, question: str) -> str:
         context_text = "\n\n".join(
-            f"[{i+1}] {ctx.text}"
+            f"[{i+1}] {ctx['text']}"
             for i, ctx in enumerate(contexts)
         )
 
