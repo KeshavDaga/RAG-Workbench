@@ -12,6 +12,9 @@ class YoutubeFetcher:
         """
         Fetch raw YouTube transcript segments.
 
+        Args:
+            video_id: Valid YouTube video ID (11 characters)
+
         Returns:
             List of dicts with keys: text, start, duration
 
