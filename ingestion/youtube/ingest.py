@@ -87,26 +87,31 @@ def ingest_youtube_video(
         overlap_ratio: Ratio of segments to overlap between chunks
 
     Steps:
-    1. Extract and validate video ID from URL or direct ID
-    2. Fetch transcript
-    3. Normalize segments
-    4. Chunk segments
-    5. Embed chunks
-    6. Store vectors + metadata
+    1. Clear vector store before ingesting
+    2. Extract and validate video ID from URL or direct ID
+    3. Fetch transcript
+    4. Normalize segments
+    5. Chunk segments
+    6. Embed chunks
+    7. Store vectors + metadata
     """
-    # 1. Extract and validate video ID
+
+    # 1. Clear vector store before ingesting
+    vector_store.clear()
+
+    # 2. Extract and validate video ID
     video_id = extract_video_id(video_id_or_url)
     
-    # 2. Fetch raw transcript
+    # 3. Fetch raw transcript
     raw_segments = YoutubeFetcher.fetch_transcript(video_id)
 
-    # 3. Normalize
+    # 4. Normalize
     normalized_segments = Normalizer.normalize_segments(raw_segments)
 
     if not normalized_segments:
         raise ValueError(f"No usable transcript after normalization: {video_id}")
 
-    # 4. Chunk
+    # 5. Chunk
     chunks = Chunker.chunk_segments(
         normalized_segments,
         max_chars=max_chars,
@@ -116,7 +121,7 @@ def ingest_youtube_video(
     if not chunks:
         raise ValueError(f"No chunks produced for video: {video_id}")
 
-    # 5. Prepare texts + metadata
+    # 6. Prepare texts + metadata
     texts = []
     metadatas = []
 
@@ -131,6 +136,6 @@ def ingest_youtube_video(
             "source": "youtube",
         })
 
-    # 6. Embed and store
+    # 7. Embed and store
     embeddings = embedder.embed(texts)
     vector_store.add(embeddings, metadatas)
