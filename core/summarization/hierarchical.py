@@ -1,6 +1,9 @@
+import logging
 import math
 
 from core.llm.base import Generator
+
+logger = logging.getLogger(__name__)
 
 CHUNKS_PER_MAP = 5
 
@@ -46,20 +49,55 @@ def hierarchical_summarize(generator: Generator, chunk_texts: list[str]) -> str:
     if not chunk_texts:
         raise ValueError("No transcript chunks to summarize")
 
+    n_chunks = len(chunk_texts)
+    n_map_batches = math.ceil(n_chunks / CHUNKS_PER_MAP)
+    logger.info(
+        "hierarchical_summarize map phase: %d chunks -> ~%d map calls (batch_size=%d)",
+        n_chunks,
+        n_map_batches,
+        CHUNKS_PER_MAP,
+    )
+
     summaries: list[str] = []
     for i in range(0, len(chunk_texts), CHUNKS_PER_MAP):
         batch = chunk_texts[i : i + CHUNKS_PER_MAP]
+        batch_idx = i // CHUNKS_PER_MAP + 1
+        logger.info(
+            "hierarchical_summarize map batch %d/%d (chunks %d-%d)",
+            batch_idx,
+            n_map_batches,
+            i,
+            min(i + len(batch), n_chunks) - 1,
+        )
         summaries.append(generator.generate(_chunk_map_prompt(batch)))
 
+    reduce_round = 0
     while len(summaries) > 10:
+        reduce_round += 1
         n = len(summaries)
         merge_size = min(math.ceil(n / 10), 5)
+        logger.info(
+            "hierarchical_summarize reduce round %d: merging %d summaries merge_size=%d",
+            reduce_round,
+            n,
+            merge_size,
+        )
         new_summaries: list[str] = []
         for j in range(0, n, merge_size):
             batch = summaries[j : j + merge_size]
             new_summaries.append(generator.generate(_reduce_prompt(batch)))
         summaries = new_summaries
+        logger.info(
+            "hierarchical_summarize reduce round %d done -> %d summaries",
+            reduce_round,
+            len(summaries),
+        )
 
     if len(summaries) == 1:
+        logger.info("hierarchical_summarize final: single summary, skipping merge")
         return summaries[0]
+    logger.info(
+        "hierarchical_summarize final merge: %d section summaries -> one",
+        len(summaries),
+    )
     return generator.generate(_final_prompt(summaries))

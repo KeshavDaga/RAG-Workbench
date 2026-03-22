@@ -23,6 +23,13 @@ def _http_detail(exc: BaseException) -> str:
 
 @router.post("/ingest/youtube", response_model=IngestResponse)
 def ingest_youtube(request: IngestRequest):
+    logger.info(
+        "ingest/youtube start video_id=%s embedder=%s max_chars=%s overlap_ratio=%s",
+        request.video_id,
+        request.embedder,
+        request.max_chars,
+        request.overlap_ratio,
+    )
     try:
         embedder = get_embedder(request.embedder)
 
@@ -34,21 +41,31 @@ def ingest_youtube(request: IngestRequest):
             overlap_ratio=request.overlap_ratio,
         )
 
+        n_vectors = getattr(vector_store, "index", None)
+        ntotal = int(n_vectors.ntotal) if n_vectors is not None else -1
+        logger.info(
+            "ingest/youtube ok video_id=%s vectors_in_index=%s",
+            request.video_id,
+            ntotal,
+        )
         return IngestResponse(
             success=True,
             message=f"Successfully ingested video: {request.video_id}",
         )
     except InvalidVideoIdError as e:
+        logger.warning("ingest/youtube invalid video_id/url: %s", e)
         raise HTTPException(
             status_code=400,
             detail=f"Invalid video ID or URL: {_http_detail(e)}",
         ) from e
     except KeyError as e:
+        logger.warning("ingest/youtube unknown embedder key: %s", e)
         raise HTTPException(
             status_code=400,
             detail=f"Unknown embedder key: {e!s}. Use a key from the registry (e.g. qwen3).",
         ) from e
     except YoutubeTranscriptError as e:
+        logger.warning("ingest/youtube transcript error video_id=%s: %s", request.video_id, e)
         raise HTTPException(status_code=400, detail=_http_detail(e)) from e
     except Exception as e:
         logger.exception("Ingest failed for video_id=%s", request.video_id)
@@ -57,6 +74,7 @@ def ingest_youtube(request: IngestRequest):
 
 @router.post("/ingest/clear")
 def clear_vector_store():
+    logger.info("ingest/clear: clearing vector store")
     vector_store.clear()
     return {
         "success": True,

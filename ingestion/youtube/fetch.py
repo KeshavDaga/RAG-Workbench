@@ -1,4 +1,9 @@
+import logging
+
 from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled, NoTranscriptFound, VideoUnavailable
+
+logger = logging.getLogger(__name__)
+
 
 class YoutubeTranscriptError(Exception):
     """Base exception for YouTube transcript errors."""
@@ -22,9 +27,10 @@ class YoutubeFetcher:
             TranscriptNotAvailableError: if transcript is unavailable
         """
         try:
+            logger.info("YoutubeFetcher.fetch_transcript: video_id=%s", video_id)
             youtube_transcript_api = YouTubeTranscriptApi()
             transcript = youtube_transcript_api.fetch(video_id, languages=["en"])
-            return [
+            snippets = [
                 {
                     "text": snippet.text,
                     "start": snippet.start,
@@ -32,6 +38,12 @@ class YoutubeFetcher:
                 }
                 for snippet in transcript
             ]
+            logger.info(
+                "YoutubeFetcher.fetch_transcript: ok video_id=%s snippet_count=%d",
+                video_id,
+                len(snippets),
+            )
+            return snippets
 
         except (TranscriptsDisabled, NoTranscriptFound):
             raise TranscriptNotAvailableError(

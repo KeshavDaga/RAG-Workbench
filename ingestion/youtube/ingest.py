@@ -1,3 +1,4 @@
+import logging
 import re
 from urllib.parse import urlparse, parse_qs
 
@@ -7,6 +8,8 @@ from ingestion.youtube.chunk import Chunker
 
 from core.llm.base import Embedder
 from core.vector_store.base import VectorStore
+
+logger = logging.getLogger(__name__)
 
 
 class InvalidVideoIdError(Exception):
@@ -97,16 +100,20 @@ def ingest_youtube_video(
     """
 
     # 1. Clear vector store before ingesting
+    logger.info("ingest_youtube_video: clearing vector store")
     vector_store.clear()
 
     # 2. Extract and validate video ID
     video_id = extract_video_id(video_id_or_url)
-    
+    logger.info("ingest_youtube_video: resolved video_id=%s", video_id)
+
     # 3. Fetch raw transcript
     raw_segments = YoutubeFetcher.fetch_transcript(video_id)
+    logger.info("ingest_youtube_video: fetched %d raw segment(s)", len(raw_segments))
 
     # 4. Normalize
     normalized_segments = Normalizer.normalize_segments(raw_segments)
+    logger.info("ingest_youtube_video: normalized to %d segment(s)", len(normalized_segments))
 
     if not normalized_segments:
         raise ValueError(f"No usable transcript after normalization: {video_id}")
@@ -120,6 +127,8 @@ def ingest_youtube_video(
 
     if not chunks:
         raise ValueError(f"No chunks produced for video: {video_id}")
+
+    logger.info("ingest_youtube_video: %d chunk(s) max_chars=%s overlap_ratio=%s", len(chunks), max_chars, overlap_ratio)
 
     # 6. Prepare texts + metadata
     texts = []
@@ -137,5 +146,7 @@ def ingest_youtube_video(
         })
 
     # 7. Embed and store
+    logger.info("ingest_youtube_video: embedding %d chunk(s)", len(texts))
     embeddings = embedder.embed(texts)
     vector_store.add(embeddings, metadatas)
+    logger.info("ingest_youtube_video: stored %d vector(s) for video_id=%s", len(embeddings), video_id)

@@ -1,8 +1,12 @@
+import logging
 import faiss
 import numpy as np
 from typing import List, Any
 
 from core.vector_store.base import VectorStore
+
+logger = logging.getLogger(__name__)
+
 
 class FaissVectorStore(VectorStore):
     def __init__(self, dimension: int):
@@ -30,6 +34,12 @@ class FaissVectorStore(VectorStore):
 
         self.index.add(vectors_np)
         self.metadatas.extend(metadatas)
+        logger.info(
+            "FaissVectorStore.add: +%d vectors (dim=%d) index.ntotal=%d",
+            len(vectors),
+            self.dimension,
+            self.index.ntotal,
+        )
 
     def search(self, query_vector: List[float], top_k: int = 5) -> List[Any]:
         if self.index.ntotal == 0:
@@ -44,11 +54,20 @@ class FaissVectorStore(VectorStore):
         faiss.normalize_L2(query_np)
 
         scores, indices = self.index.search(query_np, top_k)
-        return [self.metadatas[idx] for idx in indices[0]]
+        hits = [self.metadatas[idx] for idx in indices[0]]
+        logger.debug(
+            "FaissVectorStore.search: top_k=%d returned %d hit(s) ntotal=%d",
+            top_k,
+            len(hits),
+            self.index.ntotal,
+        )
+        return hits
 
     def clear(self) -> None:
+        prev = self.index.ntotal
         self.index.reset()
         self.metadatas.clear()
+        logger.info("FaissVectorStore.clear: dropped index (had %d vectors)", prev)
 
     def list_ordered_chunk_texts(self) -> List[str]:
         """
