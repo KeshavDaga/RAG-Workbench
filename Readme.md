@@ -28,6 +28,18 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+### Environment variables
+
+Create a `.env` file in the project root and **do not commit** real secrets. Add your keys from [Langfuse Cloud](https://cloud.langfuse.com/) (or your self-hosted URL):
+
+```bash
+LANGFUSE_SECRET_KEY="sk-lf-..."
+LANGFUSE_PUBLIC_KEY="pk-lf-..."
+LANGFUSE_BASE_URL="https://cloud.langfuse.com"
+```
+
+Use the US host if your project is in the US region: `https://us.cloud.langfuse.com`.
+
 ### Start the server
 
 ```bash
