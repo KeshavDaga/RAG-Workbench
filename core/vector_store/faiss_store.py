@@ -15,6 +15,16 @@ class FaissVectorStore(VectorStore):
             raise ValueError("Vectors and metadata length mismatch")
 
         vectors_np = np.array(vectors).astype("float32")
+        if vectors_np.ndim != 2:
+            raise ValueError(f"Expected 2D embedding matrix, got shape {vectors_np.shape}")
+
+        actual_dim = vectors_np.shape[1]
+        if actual_dim != self.dimension:
+            raise ValueError(
+                f"Embedding dimension mismatch: Ollama returned vectors of length {actual_dim}, "
+                f"but FaissVectorStore was created with dimension={self.dimension}. "
+                f"Set VECTOR_DIM in core/vector_store/instance.py to {actual_dim} (must match your embedder)."
+            )
 
         faiss.normalize_L2(vectors_np)
 
@@ -26,6 +36,11 @@ class FaissVectorStore(VectorStore):
             return []
 
         query_np = np.array([query_vector]).astype("float32")
+        if query_np.shape[1] != self.dimension:
+            raise ValueError(
+                f"Query embedding length {query_np.shape[1]} != index dimension {self.dimension}. "
+                "Use the same embedder (and VECTOR_DIM) as for ingest."
+            )
         faiss.normalize_L2(query_np)
 
         scores, indices = self.index.search(query_np, top_k)
