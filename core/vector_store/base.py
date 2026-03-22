@@ -24,3 +24,10 @@ class VectorStore(ABC):
         Return top_k most similar metadata entries
         """
         pass
+
+    @abstractmethod
+    def clear(self) -> None:
+        """
+        Clear all vectors and metadata from the vector store
+        """
+        pass

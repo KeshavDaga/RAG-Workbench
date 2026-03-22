@@ -6,6 +6,7 @@ cachetools==6.2.4
 certifi==2025.11.12
 charset-normalizer==3.4.4
 click==8.3.1
+defusedxml==0.7.1
 distro==1.9.0
 docstring_parser==0.17.0
 faiss-cpu==1.13.1
@@ -76,4 +77,5 @@ uuid_utils==0.12.0
 uvicorn==0.38.0
 websockets==15.0.1
 xxhash==3.6.0
+youtube-transcript-api==1.2.3
 zstandard==0.25.0

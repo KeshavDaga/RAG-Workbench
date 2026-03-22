@@ -52,3 +52,6 @@ data/
 models/
 *.pkl
 *.pickle
+
+# Scripts
+scripts/
