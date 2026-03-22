@@ -4,9 +4,11 @@ from langchain_ollama import ChatOllama
 from langchain_ollama import OllamaEmbeddings
 from core.llm.base import Generator, Embedder
 from langchain_core.output_parsers import StrOutputParser
+from langfuse.langchain import CallbackHandler
 
 logger = logging.getLogger(__name__)
 
+langfuse_handler = CallbackHandler()
 
 class OllamaGenerator(Generator):
     def __init__(self, model: str):
@@ -16,7 +18,10 @@ class OllamaGenerator(Generator):
 
     def generate(self, prompt: str) -> str:
         logger.info("OllamaGenerator model=%s invoke prompt_len=%d", self.model, len(prompt))
-        response = self.client.invoke(prompt)
+        response = self.client.invoke(
+            prompt,
+            config={"callbacks": [langfuse_handler]}
+        )
         out = self.parser.invoke(response)
         logger.info("OllamaGenerator model=%s response_len=%d", self.model, len(out))
         return out
