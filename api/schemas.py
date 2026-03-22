@@ -10,6 +10,12 @@ class QueryRequest(BaseModel):
     embedder: str
 
 
+class SummaryRequest(BaseModel):
+    """Request schema for hierarchical video summary (uses ingested chunks only)."""
+
+    generator: str
+
+
 class ChatRequest(BaseModel):
     """Request schema for chat endpoint."""
 
@@ -31,6 +37,12 @@ class QueryResponse(BaseModel):
     """Response schema for RAG query endpoint."""
 
     answer: str
+
+
+class SummaryResponse(BaseModel):
+    """Response schema for hierarchical summary endpoint."""
+
+    summary: str
 
 
 class ChatResponse(BaseModel):

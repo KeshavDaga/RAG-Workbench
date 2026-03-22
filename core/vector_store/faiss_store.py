@@ -34,3 +34,16 @@ class FaissVectorStore(VectorStore):
     def clear(self) -> None:
         self.index.reset()
         self.metadatas.clear()
+
+    def list_ordered_chunk_texts(self) -> List[str]:
+        """
+        Return chunk texts in order (video_id, then chunk_index) for full-document flows
+        like hierarchical summarization.
+        """
+        if not self.metadatas:
+            return []
+        ordered = sorted(
+            self.metadatas,
+            key=lambda m: (m.get("video_id", ""), m.get("chunk_index", 0)),
+        )
+        return [m["text"] for m in ordered if m.get("text")]
