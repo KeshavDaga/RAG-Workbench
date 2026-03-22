@@ -4,23 +4,19 @@ from core.llm.ollama import OllamaGenerator, OllamaEmbedder
 GENERATORS = {
     "qwen": {
         "provider": "ollama",
-        "model": "qwen3:30b"
+        "model": "qwen3.5:35b",
     },
     "gemma3": {
         "provider": "ollama",
-        "model": "gemma3:12b"
-    }
+        "model": "gemma3:12b",
+    },
 }
 
 EMBEDDERS = {
-    "mxbai": {
+    "qwen3": {
         "provider": "ollama",
-        "model": "mxbai-embed-large:latest"
+        "model": "qwen3-embedding:latest",
     },
-    "nomic": {
-        "provider": "ollama",
-        "model": "nomic-embed-text:latest"
-    }
 }
 
 
