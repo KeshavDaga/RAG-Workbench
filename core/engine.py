@@ -1,5 +1,7 @@
 import logging
 
+from langfuse import observe
+
 from core.llm.base import Generator
 from core.retriever.base import Retriever
 
@@ -11,6 +13,7 @@ class RAGEngine:
         self.generator = generator
         self.retriever = retriever
 
+    @observe(name="RAGEngine.query", as_type="chain", capture_input=True, capture_output=True)
     def query(self, question: str) -> str:
         contexts = self.retriever.retrieve(question)
         logger.info(

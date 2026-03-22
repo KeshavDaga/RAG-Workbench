@@ -1,10 +1,10 @@
 import logging
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 from api.schemas import QueryRequest, QueryResponse
 from core.engine import RAGEngine
-from core.llm.registry import get_generator, get_embedder
+from core.llm.registry import EMBEDDERS, GENERATORS, get_embedder, get_generator
 from core.retriever.simple import SimpleRetriever
 from core.vector_store.instance import vector_store
 
@@ -21,8 +21,22 @@ def query_rag(request: QueryRequest):
         request.embedder,
         len(request.question),
     )
-    generator = get_generator(request.generator)
-    embedder = get_embedder(request.embedder)
+    try:
+        generator = get_generator(request.generator)
+    except KeyError:
+        logger.warning("rag/query unknown generator key=%r", request.generator)
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unknown generator {request.generator!r}. Allowed: {list(GENERATORS)}.",
+        ) from None
+    try:
+        embedder = get_embedder(request.embedder)
+    except KeyError:
+        logger.warning("rag/query unknown embedder key=%r", request.embedder)
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unknown embedder {request.embedder!r}. Allowed: {list(EMBEDDERS)}.",
+        ) from None
 
     retriever = SimpleRetriever(
         embedder=embedder,
