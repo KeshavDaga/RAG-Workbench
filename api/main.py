@@ -1,7 +1,21 @@
+from dotenv import load_dotenv
+
+load_dotenv()
+
 import logging
+import os
+
+from langfuse import Langfuse
+
+Langfuse(
+    public_key=os.environ["LANGFUSE_PUBLIC_KEY"],
+    secret_key=os.environ["LANGFUSE_SECRET_KEY"],
+    base_url=os.environ["LANGFUSE_BASE_URL"],
+)
 
 from fastapi import FastAPI
 
+from api.middleware import LangfuseRequestContextMiddleware
 from api.routes import router
 
 # Ensure app modules (api, core, ingestion) log at INFO when running under uvicorn.
@@ -17,6 +31,8 @@ else:
         logging.getLogger(_pkg).setLevel(logging.INFO)
 
 app = FastAPI(title="rag-workbench")
+
+app.add_middleware(LangfuseRequestContextMiddleware)
 
 app.include_router(router)
 

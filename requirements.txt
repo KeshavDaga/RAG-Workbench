@@ -6,6 +6,9 @@ langchain-core
 langchain-openai
 openai
 
+# LangFuse Integration
+langfuse
+
 # Anthropic Integration
 langchain-anthropic
 

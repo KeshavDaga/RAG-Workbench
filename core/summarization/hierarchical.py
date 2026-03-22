@@ -1,6 +1,8 @@
 import logging
 import math
 
+from langfuse import observe
+
 from core.llm.base import Generator
 
 logger = logging.getLogger(__name__)
@@ -39,6 +41,13 @@ def _final_prompt(summaries: list[str]) -> str:
 Final video summary:"""
 
 
+@observe(
+    name="hierarchical_summarize",
+    as_type="chain",
+    # Avoid attaching full chunk texts to Langfuse (large / sensitive).
+    capture_input=False,
+    capture_output=True,
+)
 def hierarchical_summarize(generator: Generator, chunk_texts: list[str]) -> str:
     """
     Map: every CHUNKS_PER_MAP chunks -> one summary.
